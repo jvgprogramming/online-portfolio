@@ -169,6 +169,70 @@ const scrollUp = () => {
 
 window.addEventListener('scroll', scrollUp);
 
+/*=============== SCROLL DIRECTION ANIMATION ===============*/
+let lastScrollY = 0;
+let isScrollingDown = false;
+
+// Add scroll-animate class to all sections and major elements
+document.addEventListener('DOMContentLoaded', () => {
+    const elementsToAnimate = document.querySelectorAll(
+        '.section, .work__card, .services__card, .contact__card, .about__box, .skills__header, .timeline__item'
+    );
+    elementsToAnimate.forEach(el => {
+        el.classList.add('scroll-animate');
+    });
+    
+    // Trigger initial animation for elements already in viewport
+    animateOnScroll();
+});
+
+function animateOnScroll() {
+    const currentScrollY = window.scrollY;
+    isScrollingDown = currentScrollY > lastScrollY;
+    lastScrollY = currentScrollY;
+
+    const animatedElements = document.querySelectorAll('.scroll-animate');
+    
+    animatedElements.forEach(element => {
+        const elementRect = element.getBoundingClientRect();
+        const elementTop = elementRect.top;
+        const elementHeight = elementRect.height;
+        const windowHeight = window.innerHeight;
+        
+        // Calculate how far into viewport the element is (0 to 1)
+        // Start animation when element reaches bottom of viewport
+        const startPoint = windowHeight;
+        const endPoint = -elementHeight / 2;
+        
+        const distance = startPoint - elementTop;
+        const totalDistance = startPoint - endPoint;
+        
+        // Clamp progress between 0 and 1
+        let progress = Math.min(1, Math.max(0, distance / totalDistance));
+        
+        // Check if element is completely out of view
+        if (elementTop > windowHeight || elementTop + elementHeight < 0) {
+            // Don't animate out of view elements
+            return;
+        }
+        
+        // Apply smooth animation based on scroll progress
+        const opacity = Math.min(1, progress * 1.2);
+        const translateY = isScrollingDown ? 
+            (1 - progress) * 30 : 
+            -(1 - progress) * 30;
+        
+        element.style.opacity = opacity;
+        element.style.transform = `translateY(${translateY}px)`;
+        
+        // Remove animation classes as we're using inline styles now
+        element.classList.remove('scroll-down', 'scroll-up');
+    });
+}
+
+window.addEventListener('scroll', animateOnScroll, { passive: true });
+window.addEventListener('resize', animateOnScroll, { passive: true });
+
 /*=============== SWIPER CERTIFICATE ===============*/
 const certificateSwiper = new Swiper('.certificate-swiper', {
     loop: true,
